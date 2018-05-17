@@ -13,8 +13,7 @@ var genrate_address = function(api_key, pass, lable)
                 reject(err);
                 //else reject(res);
             };
-//            var api_key = '2b5b-0dff-6e47-c216';
-//            var pass = 'vector31';
+
             var ans;
             var BlockIo = require('block_io');
             var version = 2;
@@ -45,8 +44,6 @@ var get_address_by_label = function(api_key, pass, lable)
                     resolve(res.data.error_message);
                 reject(err);
             };
-//            var api_key = '2b5b-0dff-6e47-c216';
-//            var pass = 'vector31';
             var BlockIo = require('block_io');
             var version = 2;
             var ans;
@@ -77,8 +74,6 @@ var get_available_balance = function(api_key, pass, address, lable, id)
                     resolve(res.data.error_message);
                 reject(err);
             };
-//            var api_key = '2b5b-0dff-6e47-c216';
-//            var pass = 'vector31';
             var ans;
             var BlockIo = require('block_io');
             var version = 2;
@@ -122,9 +117,7 @@ var pending_received_balance = function(api_key, pass, address, lable, id)
                 reject(err);
             };
 
-            console.log(lable, " ", address, " ", id);
-//            var api_key = '2b5b-0dff-6e47-c216';
-//            var pass = 'vector31';
+//            console.log(lable, " ", address, " ", id);
             var BlockIo = require('block_io');
             var version = 2;
             var ans;
@@ -154,8 +147,6 @@ var pending_received_balance = function(api_key, pass, address, lable, id)
 /////////////////////////////////////////////////////////////////////////////////////////////
 var get_withdrawl = function(api_key, pass, amounts, to_addresses, pin)
 {
-//    var api_key = '2b5b-0dff-6e47-c216';
-//    var pass = 'vector31';
     var amount = amounts.join();
     var to_address = to_addresses.join();
     var BlockIo = require('block_io');
@@ -198,8 +189,6 @@ var get_transactions_detail = function(api_key, pass, TXID)
                     resolve(res.data.error_message);
                 reject(err);
             };
-            var api_key = '2b5b-0dff-6e47-c216';
-            var pass = 'vector31';
             var BlockIo = require('block_io');
             var version = 2;
             var ans;
