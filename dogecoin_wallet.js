@@ -40,69 +40,34 @@ class DogeCoin {
             )
 
     }
-}
-//
-//var genrate_address = function(api_key, pass, lable)
-//{
-//    var genrate_add = function(api_key, pass, lable) {
-//        return new Promise(function(resolve, reject)
-//        {
-//            function response(err, res)
-//            {
-//                console.log("res: ", res);
-//                if (res.data.address)
-//                    resolve(res.data.address);
-//                else
-//                    resolve(res.data.error_message);
-//                reject(err);
-//                //else reject(res);
-//            };
-//
-//            var ans;
-//            var BlockIo = require('block_io');
-//            var version = 2;
-//            var block_io = new BlockIo(api_key, pass, version);
-//            block_io.get_new_address({'label': lable}, response); //ans coming from get_new_address
-//        })
-//    };
-//
-//    genrate_add(lable)
-//            .then(
-//                function(result){ans = result; console.log(`end: ${ans}`); },
-//                function(err){ console.log(err); console.log('error'); }
-//            )
-//};
 
-/////////////////////////////////////////////////////////////////////////////////////////////
-var get_address_by_label = function(api_key, pass, lable)
-{
-    var get_add_by_label = function(api_key, pass, lable){
-        return new Promise(function(resolve, reject)
-        {
-            function response(err, res)
-            {
-                console.log("res: ", res);
-                if (res.data.address)
-                    resolve(res.data.address);
-                else
-                    resolve(res.data.error_message);
-                reject(err);
-            };
-            var BlockIo = require('block_io');
-            var version = 2;
-            var ans;
-            var block_io = new BlockIo(api_key, pass, version);
-            block_io.get_address_by_label({'lable':lable}, response);
-        })
+    get_address_by_label(label, call_back_function){
+        var get_add_by_label = (label) => {
+            var self = this;
+            return new Promise(function(resolve, reject){
+                function response(err, res){
+                    if (err){
+                        reject(err);
+                    }
+                    if (res.data.address){
+                        resolve(res.data.address);
+                    }
+                    else{
+                        var err = new throw_error(res.data.error_message, 500)
+                        reject(err);
+                    }
+                };
+                self.block_io.get_address_by_label({'label':label}, response);
+            })
+        };
+        get_add_by_label(label)
+            .then(
+                function(result){ call_back_function(null, result); },
+                function(err){ call_back_function(err, null); }
+            )
     };
 
-    get_add_by_label(api_key, pass, lable)
-        .then(
-            function(result){ans = result; console.log(`end: ${ans}`); },
-            function(err){ console.log(err); console.log('error'); }
-        )
-};
-
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////
 var get_available_balance = function(api_key, pass, address, lable, id)
 {
@@ -247,11 +212,4 @@ var get_transactions_detail = function(api_key, pass, TXID)
         )
 };
 
-//module.exports =
-module.exports.get_available_balance = get_available_balance;
-module.exports.get_transactions_detail = get_transactions_detail;
-module.exports.get_withdrawl = get_withdrawl;
-module.exports.get_address_by_label = get_address_by_label;
-module.exports.pending_received_balance = pending_received_balance;
-module.exports.get_address_by_label = get_address_by_label;
-module.exports.DogeCoin = DogeCoin
+module.exports = DogeCoin
