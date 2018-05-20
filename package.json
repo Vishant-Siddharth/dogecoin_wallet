@@ -1,0 +1,23 @@
+{
+  "name": "dogecoin_wallet",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Vishant-Siddharth/dogecoin_wallet.git"
+  },
+  "keywords": [],
+  "author": "Vishant Sidhartha | Devesh Aggrawal",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Vishant-Siddharth/dogecoin_wallet/issues"
+  },
+  "homepage": "https://github.com/Vishant-Siddharth/dogecoin_wallet#readme",
+  "dependencies": {
+    "block_io": "^1.0.9-2"
+  }
+}
