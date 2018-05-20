@@ -1,33 +1,77 @@
-var genrate_address = function(api_key, pass, lable)
-{
-    var genrate_add = function(api_key, pass, lable) {
-        return new Promise(function(resolve, reject)
-        {
-            function response(err, res)
-            {
-                console.log("res: ", res);
-                if (res.data.address)
-                    resolve(res.data.address);
-                else
-                    resolve(res.data.error_message);
-                reject(err);
-                //else reject(res);
-            };
+"use strict";
+var throw_error = require('./custom_error');
 
-            var ans;
-            var BlockIo = require('block_io');
-            var version = 2;
-            var block_io = new BlockIo(api_key, pass, version);
-            block_io.get_new_address({'label': lable}, response); //ans coming from get_new_address
-        })
-    };
+class DogeCoin {
 
-    genrate_add(lable)
+    constructor (obj){
+        if (!obj){
+            throw new throw_error('Please pass the dictionary', 500)
+        }
+        if ((!obj.api_key || !obj.pass || !obj.version)){
+            throw new throw_error('Not all parameters were passed', 500)
+        }
+        var BlockIo = require('block_io');
+        this.block_io = new BlockIo(obj.api_key, obj.pass, obj.version);
+    }
+
+    generate_address(label, call_back_function){
+        var generate_add = (label) => {
+            var self = this;
+            return new Promise(function(resolve, reject){
+                function response(err, res){
+                    if (err){
+                        reject(err);
+                    }
+                    if (res.data.address){
+                        resolve(res.data.address);
+                    }
+                    else{
+                        var err = new throw_error(res.data.error_message, 500)
+                        reject(err);
+                    }
+                };
+                self.block_io.get_new_address({'label': label}, response); //ans coming from get_new_address
+            })
+        };
+        generate_add(label)
             .then(
-                function(result){ans = result; console.log(`end: ${ans}`); },
-                function(err){ console.log(err); console.log('error'); }
+                function(result){ call_back_function(null, result); },
+                function(err){ call_back_function(err, null); }
             )
-};
+
+    }
+}
+//
+//var genrate_address = function(api_key, pass, lable)
+//{
+//    var genrate_add = function(api_key, pass, lable) {
+//        return new Promise(function(resolve, reject)
+//        {
+//            function response(err, res)
+//            {
+//                console.log("res: ", res);
+//                if (res.data.address)
+//                    resolve(res.data.address);
+//                else
+//                    resolve(res.data.error_message);
+//                reject(err);
+//                //else reject(res);
+//            };
+//
+//            var ans;
+//            var BlockIo = require('block_io');
+//            var version = 2;
+//            var block_io = new BlockIo(api_key, pass, version);
+//            block_io.get_new_address({'label': lable}, response); //ans coming from get_new_address
+//        })
+//    };
+//
+//    genrate_add(lable)
+//            .then(
+//                function(result){ans = result; console.log(`end: ${ans}`); },
+//                function(err){ console.log(err); console.log('error'); }
+//            )
+//};
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 var get_address_by_label = function(api_key, pass, lable)
@@ -210,3 +254,4 @@ module.exports.get_withdrawl = get_withdrawl;
 module.exports.get_address_by_label = get_address_by_label;
 module.exports.pending_received_balance = pending_received_balance;
 module.exports.get_address_by_label = get_address_by_label;
+module.exports.DogeCoin = DogeCoin
