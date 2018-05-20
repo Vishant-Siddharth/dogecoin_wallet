@@ -34,12 +34,10 @@ class DogeCoin {
             })
         };
         generate_add(label)
-            .then(
-                function(result){ call_back_function(null, result); },
-                function(err){ call_back_function(err, null); }
-            )
+            .then((result) =>{ call_back_function(null, result);})
+            .catch((err) => {if(err){console.log('asdf');}call_back_function(err, null);});
 
-    }
+    };
 
     get_address_by_label(label, call_back_function){
         var get_add_by_label = (label) => {
@@ -53,18 +51,15 @@ class DogeCoin {
                         resolve(res.data.address);
                     }
                     else{
-                        var err = new throw_error(res.data.error_message, 500)
-                        reject(err);
+                        reject(new throw_error(res.data.error_message, 500));
                     }
                 };
                 self.block_io.get_address_by_label({'label':label}, response);
             })
         };
         get_add_by_label(label)
-            .then(
-                function(result){ call_back_function(null, result); },
-                function(err){ call_back_function(err, null); }
-            )
+            .then((result) =>{ call_back_function(null, result);})
+            .catch((err) => {if(err){console.log('asdf');}call_back_function(err, null);});
     };
 
 }
