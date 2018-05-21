@@ -2,9 +2,11 @@ var express = require('express');
 var DogeCoin = new require('./dogecoin_wallet.js');
 var port = process.env.PORT || 5000;
 var host = process.env.HOST || "0.0.0.0";
+var api_key = process.env.DOGECOIN_MAIN_KEY || 'b270-9972-3478-2fa8';
+var pass = process.env.DOGECOIN_MAIN_PASS || 'vishant3731';
 
 const app = express();
-const dogecoin = new DogeCoin({api_key:'b270-9972-3478-2fa8', pass:'vishant3731', version:2});
+const dogecoin = new DogeCoin({api_key:api_key, pass:pass, version:2});
 
 
 app.get('/', function(req, res){
