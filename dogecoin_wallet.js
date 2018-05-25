@@ -29,15 +29,19 @@ class DogeCoin
                 {
                     if (err)
                     {
+                        console.log("if err: ", err);
                         reject(err);
                     }
+
                     if (res.data.address)
                     {
-                        let val = res.data.address + "-" + res.data.user_id
-                        resolve(res.data.address);
+                        console.log("if add: ", res.data);
+                        let val = res.data.address + "-" + res.data.user_id + "-" + res.data.label;
+                        resolve(val);
                     }
                     else
                     {
+                        console.log('else res: ',res);
                         var err = new throw_error(res.data.error_message, 500)
                         reject(err);
                     }
@@ -45,9 +49,16 @@ class DogeCoin
                 self.block_io.get_new_address({'label': label}, response); //ans coming from get_new_address
             })
         };
-        generate_add(label)
-            .then((result) =>{ call_back_function(null, result);})
-            .catch((err) => {if(err){console.log('asdf');}call_back_function(err, null);});
+        generate_add(String(label))
+            .then((result) =>{ console.log('then');
+            try{
+                call_back_function(null, result);
+             }
+             catch(e){
+                console.log("error1234 ", e);
+              }
+            })
+            .catch((err) => {if(err){console.log('asdf: ', err);}call_back_function(err, null);});
 
     };
 
@@ -77,13 +88,13 @@ class DogeCoin
             })
         };
         get_add_by_label(label)
-            .then((result) =>{ call_back_function(null, result);})
+            .then((result) =>{ console.log('then');call_back_function(null, result);})
             .catch((err) => {if(err){console.log('asdf');}call_back_function(err, null);});
     };
 
-    get_available_balance(address, call_back_function)
+    get_availabel_balance(address, call_back_function)
     {
-        var get_available_bal = (address) =>
+        var get_availabel_bal = (address) =>
         {
             var self = this;
             return new Promise(function(resolve, reject)
@@ -94,9 +105,9 @@ class DogeCoin
                     {
                         reject(err);
                     }
-                    if (res.data.available_balance)
+                    if (res.data.availabel_balance)
                     {
-                        resolve(res.data.available_balance);
+                        resolve(res.data.availabel_balance);
                     }
                     else
                     {
@@ -107,7 +118,7 @@ class DogeCoin
             })
         };
 
-        get_available_bal(address)
+        get_availabel_bal(address)
             .then((result) =>{call_back_function(null, result);})
             .catch((err) => {if(err){console.log('asdf');}call_back_function(err, null);});
     };
