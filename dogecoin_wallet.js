@@ -94,6 +94,7 @@ class DogeCoin
 
     get_availabel_balance(address, call_back_function)
     {
+        console.log("address: ", address);
         var get_availabel_bal = (address) =>
         {
             var self = this;
@@ -105,9 +106,9 @@ class DogeCoin
                     {
                         reject(err);
                     }
-                    if (res.data.availabel_balance)
+                    if (res.data.available_balance)
                     {
-                        resolve(res.data.availabel_balance);
+                        resolve(res.data.available_balance);
                     }
                     else
                     {
@@ -156,8 +157,9 @@ class DogeCoin
 
     withdrawl_balance(dic, call_back_function)
     {
-        let address = dic.to_addresses
-        let amount = dic.amount
+        let to_address = dic.to_addresses;
+        let amount = dic.amount;
+        let from_address = dic.from_addresses;
 //        let pin = this.PIN
 
         var withdrawl_bal = () =>
@@ -180,7 +182,7 @@ class DogeCoin
                         reject(new throw_error(res.data.error_message, 500));
                     }
                 };
-                self.block_io.withdraw({'amount':amount, 'to_addresses':address, 'PIN':self.pin}, response);
+                self.block_io.withdraw_from_addresses({'amount':amount, 'from_addresses':from_address, 'to_addresses':to_address, 'PIN':self.pin}, response);
             })
         };
         withdrawl_bal()

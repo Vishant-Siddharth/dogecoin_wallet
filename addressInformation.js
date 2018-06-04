@@ -18,6 +18,10 @@ var information = new Schema({
         type:String,
         required:true,
         unique:true
+    },
+    balance:{
+        type:Number,
+        required:true
     }
 });
 
