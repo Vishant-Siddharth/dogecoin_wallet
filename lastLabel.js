@@ -9,7 +9,7 @@ var labelSchema = new Schema({ // we have to do somthing like that it will creat
         required:true,
         unique:true
     }
-})
+});
 
 module.exports = mongoose.model('Label', labelSchema, 'Label');
 

@@ -29,19 +29,19 @@ class DogeCoin
                 {
                     if (err)
                     {
-                        console.log("if err: ", err);
+                        // console.log("if err: ", err);
                         reject(err);
                     }
 
                     if (res.data.address)
                     {
-                        console.log("if add: ", res.data);
+                        // console.log("if add: ", res.data);
                         let val = res.data.address + "-" + res.data.user_id + "-" + res.data.label;
                         resolve(val);
                     }
                     else
                     {
-                        console.log('else res: ',res);
+                        // console.log('else res: ',res);
                         var err = new throw_error(res.data.error_message, 500)
                         reject(err);
                     }
@@ -50,7 +50,8 @@ class DogeCoin
             })
         };
         generate_add(String(label))
-            .then((result) =>{ console.log('then');
+            .then((result) =>{ 
+                // console.log('then');
             try{
                 call_back_function(null, result);
              }

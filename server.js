@@ -2,8 +2,8 @@ var express = require('express');
 var DogeCoin = new require('./dogecoin_wallet.js');
 var port = process.env.PORT || 5000;
 var host = process.env.HOST || "0.0.0.0";
-var api_key = process.env.DOGECOIN_MAIN_KEY || '2b5b-0dff-6e47-c216';
-var pass = process.env.DOGECOIN_MAIN_PASS || 'vectorvishant3731';
+var api_key = process.env.DOGECOIN_MAIN_KEY || '1bbe-4b1c-591d-af62';
+var pass = process.env.DOGECOIN_MAIN_PASS || 'buyucoin123';
 
 var mongoose = require('mongoose');
 var Label = require('./lastLabel');
@@ -11,7 +11,7 @@ var AddInfo = require('./addressInformation');
 var Confirmation = require('./confirmations');
 var db = 'mongodb://localhost/mydb';
 
-var change_add = "ADEVmbAr1WjvzBarkWyk5cpghcG7LUDcK9"; //label:test_1, user_id:1;
+var change_add = "ACgGLSLpsdW42hQs2bz3WfbnCQs2toqTfi"; //label:test_1, user_id:1;
 
 var bodyParser = require('body-parser');
 
@@ -32,76 +32,33 @@ app.get('/', function(req, res){
    res.json({status: "success", message: "Welcome to Dogecoin wallet"});
 });
 
+app.get('/create-address', api_controler.create_address);
 
 app.get('/create-address', (req, res)=>
 {
-    function send_json(err, data)
+    function callback_function(error ,label)
     {
-        console.log("data: ", data);
-        if(err)
+        if(error)
         {
-            res.json({status: "ghjkljherror", message: err.message});
+            res.json({status:"error", message:error});
         }
-        var arr = data.split("-");
-        let add = arr[0];
-        let userId = arr[1];
-        let lab = arr[2];
-
-        console.log("add: ", add, "user_id: ", userId, "lab: ", lab);
-
-        Label.findOneAndUpdate(
+        else
+        {
+            function send_json(err, data)
             {
-                "label":lab
-            },
-            {
-                $set:
-                    {
-                        "label":Number(lab)+1
-                    }
-            },
-            {
-                upsert:true
-            },
-            function(err, updateLabel){
-                if(err){
-                    res.send('error updating');
-                } else {
-                    console.log("lable updated: ", updateLabel);
-//                    res.send(updateLabel);
+                if(err)
+                {
+                    res.json({status: "error while generate_address", message: err.message});
                 }
+                Label_model.inc_by_one();
+                var arr = data.split("-");
+                AddInfo_model.insert_into_db({'label':arr[2], 'user_id':arr[1], 'address':arr[0], 'balance':0});
+                res.json({status: "success", id: userId, address: add, label: lab});
             }
-        );
-
-        var newAdd = new AddInfo();
-        newAdd.label = lab;
-        newAdd.user_id = userId;
-        newAdd.address = add;
-        newAdd.balance = 0;
-        newAdd.save(function(err, info){
-            if(err){
-                res.send('error in saving');
-            }
-            else{
-                console.log("information saved: ", info);
-                addresses.push(add);
-                console.log("newly generate_address: ", add);
-//                res.send({status: "success", id: user_id, address: add, label: lab});
-            }
-        });
-        res.json({status: "success", id: userId, address: add, label: lab});
+            dogecoin.generate_address(label, send_json);
+        }
     }
-
-    Label.findOne()
-        .exec(function(err, labels){
-            if(err){
-                res.send('error has been occured');
-//                res.json(status:"error", message:err);
-            }
-            else{
-                console.log("labels: ",labels);
-                dogecoin.generate_address(labels.label, send_json);
-            }
-        });
+    Label_model.find_one(callback_function);
 });
 
 
@@ -154,17 +111,7 @@ app.post('/withdrawl', (req,res)=> {
         }
         else
         {
-            AddInfo.update({"address":{$in:from_addresses}}, {$set:{'balance':0}})
-            .exec(function(err, re){
-                if(err)
-                {
-                    console.log("error while updating from_addresses balances, err: ", err);
-                }
-                else
-                {
-                    console.log("successfully updated from_addresses balance, res: ", re);
-                }
-            });
+            AddInfo_model.update_balance_using_address_list(from_addresses);
             res.json({status:"success", txid: data});
         }
     }
@@ -183,27 +130,27 @@ app.post('/withdrawl', (req,res)=> {
 
         return new Promise(function(resolve, reject)
         {
-            AddInfo.find().sort({balance:-1})
-            .exec(function(err, add_info){
+            function callback_function(err, addresses)
+            {
                 if(err)
-                {
                     reject(err);
-                }
                 else
                 {
-                    for(var i = 0 ; i < add_info.length ; i++){
-                        if (sum_actual >= sum_need)
-                            break;
+                    for(var i = 0; i< addresses.length; i++)
+                    {
+                        if(sum_actual >= sum_need)
+                            break
                         else
                         {
-                            console.log(add_info[i].balance);
-                            sum_actual += add_info[i].balance;
-                            from_addresses.push(add_info[i].address); 
+                            console.log(addresses[i].balance);
+                            sum_actual += addresses[i].balance;
+                            from_addresses.push(addresses[i].address);
                         }
                     }
                     resolve(sum_actual);
                 }
-            });
+            }
+            AddInfo_model.sorted_address(callback_function);
         });
             
     }
@@ -301,53 +248,26 @@ function update_conf_to_fullyConfirm(tx_hash){
         {
             if(block_height!=null && block_height>=30)
             {
-                Confirmation.update({"hash":tx_hash},{$set:{"status":'fully_confirmed'}})
-                .exec(function(err, res){
-                    if(err)
+                confirmation_model.update_status_fully_confirmed(tx_hash);
+                function callback(err, addr)
+                {
+                    for(j in addr)
                     {
-                        console.log("error while updating status from confirmed to fully_confirmed, err: ", err);
-                    }
-                    else
-                    {
-                        console.log("res: ", res);
-                    }
-                });
-
-                Confirmation.find({"hash":tx_hash}, {'add':1,'_id':0})
-                .exec(function(err, addr){
-                    if(err)
-                    {
-                        console.log('error when finding add, err: ', err);
-                    }
-                    else
-                    {
-                        for(j in addr.add)
+                        function send_json_date(err, bal)
                         {
-                            function send_json_data(err, bal)
+                            if(err)
                             {
-                                if(err)
-                                {
-                                    console.log("error while geting balance related to a address, err: ", err);
-                                }
-                                else
-                                {
-                                    AddInfo.update({"address":addr.add[j]}, {$set:{"balance":bal}})
-                                    .exec(function(err, r){
-                                        if(err)
-                                        {
-                                            console.log("err when updating the balance, err: ", err);
-                                        }
-                                        else
-                                        {
-                                            console.log("successfully updated r: ", r);
-                                        }
-                                    });
-                                }
+                                console.log("error while geting balance related to a address, err: ", err);
                             }
-                            dogecoin.get_availabel_balance(addr.add[j], send_json_data);
+                            else
+                            {
+                                addInfo_model.update_balance(addr[j], bal);
+                            }
                         }
+                        dogecoin.get_availabel_balance(addr.add[j], send_json_data);
                     }
-                });
+                }
+                confirmation_model.find_addresses(tx_hash, callback);
             }
         }
     }   
@@ -356,7 +276,6 @@ function update_conf_to_fullyConfirm(tx_hash){
 
 server.on('message', function(msg){
     data = JSON.parse(msg);
-    
     if (data.op == "utx"){
         t = data.x.outputs; // all addresses those are unconformed with balance
         var addresses = [];
@@ -364,123 +283,96 @@ server.on('message', function(msg){
         {
             addresses.push(t[i].addr); // all addresses those are unconfirm
         }
-
-        AddInfo.find({address:{$in: addresses } }, {"address":1, "_id":0})
-        .exec(function(err, info){
+        function callback(err, adds)=> // adds all addresses related to us of this transactions_hash
+        {
             if(err)
             {
-                console.log('error in address filltration ');
+                console.log("error in callback, err: ", err);
             }
-            else if(info.length>0) // info has all of our those addresses, those are related to that hash
+            else
             {
-                var add = info.map(x => x.address);
-                var addNew = new Confirmation();
-                addNew.hash = data.x.hash;
-                addNew.status = 'unconfirmed';
-                addNew.add = add;
-                addNew.save(function( err, info ){
-                    if(err)
-                    {
-                        console.log('error while push in confirmation in db');
-                    }
-                    else
-                    {
-                        console.log('saved ', info);
-                    }
-                });
+                confirmation_model.insert_into_db({"hash":data.x.hash, "status":"unconfirmed", "add":adds})
             }
-        });
+        }
+        AddInfo_model.find_address(addresses, callback);
     }
 
     else if(data.op == "block"){
         console.log("block has been created");
         var tx_hashes = [];
         var confirmed_hash = [];
-        
         var find_tx_hashes = () => 
         {
             return new Promise(function(resolve, reject){
-                Confirmation.find({}, {"hash":1, '_id':0})
-                .exec(function(err, hashes){
-                    console.log("1");
+                function callback(err, hashes)
+                {
                     if(err)
                     {
-                        console.log('error while searching in Confirmation block, err: ', err);
+                        console.log('error in callback: ', err);
                         reject(err);
                     }
                     else
                     {
-                        tx_hashes = hashes.map(x => x.hash); // all transaction hash we have in Confirmation
                         console.log("tx_hashes: ", tx_hashes);
-                        resolve(tx_hashes);
+                        resolve(hashes);;
                     }
-                });
+                }
+                confirmation_model.find_hashes(callback);
             });
         }
 
         var find_confirmed_hash = () =>
         {
-            return new Promise(function(resolve, reject){
+            return new Promise(function(resolve, reject)
+            {
                 find_tx_hashes().
-                    then((tx_hashes)=>{
-                        if(tx_hashes.length>0)
-                        {
-                            console.log("2");
-                            console.log("data.x.txs: ", data.x.txs);
-                            console.log("tx_hashes: ", tx_hashes);
-                            if(data.x.txs == undefined && tx_hashes == undefined)
-                                common_hash( data.x.txs, tx_hashes, (err, confirmed_hash) => {if(err){console.log(err);reject(err);} else{resolve(confirmed_hash);}});
-                        }    
-                    })
-                    .catch((err)=>{
+                then((tx_hashes)=>{
+                    if(tx_hashes.length>0)
+                    {
                         console.log("2");
-                        console.log("error in 2, err: ", err);
-                        reject(err);
-                    });        
+                        console.log("data.x.txs: ", data.x.txs);
+                        console.log("tx_hashes: ", tx_hashes);
+                        if(data.x.txs == undefined && tx_hashes == undefined)
+                            common_hash( data.x.txs, tx_hashes, (err, confirmed_hash) => {if(err){console.log(err);reject(err);} else{resolve(confirmed_hash);}});
+                    }    
+                })
+                .catch((err)=>{
+                    console.log("2");
+                    console.log("error in 2, err: ", err);
+                    reject(err);
+                });        
             });
         }
-        
-        
+                
         find_confirmed_hash().
-            then((confirmed_hash)=>{
+            then((confirmed_hash)=>
+            {
                 if(confirmed_hash.length>0)
                 {
                     console.log("3");
                     console.log("hashes>>>>>>>>>>>>>>>>: ", confirmed_hash);
-                    Confirmation.update({ hash:{$in:confirmed_hash} }, {$set:{'status':'confirmed'}}, {multi:true}) //confirmed all confirmed_hashes
-                    .exec(function(err, info){
-                        if(err)
-                            console.log('error when change the status from unconfirmed to Connected, error: ', err);
-                        else
-                        {
-                            console.log('updated successfully, info ', info);
-                        }
-                    });
+                    confirmation_model.update_status_confirmed(confirmed_hash);
                 }
             })
             .catch((err)=>{
                 console.log("error in find_confirmed_hash(), err: ", err);
             });
 
-
-        Confirmation.find({status:"confirmed"}, {"hash":1, "_id":0})
-        .exec(function(err, txHashes){
-            console.log("4");
+        function callback_function(err, hashes)
+        {
             if(err)
             {
-                console.log('error while finding all confirmed transactions');
+                console.log("error: ", err);
             }
             else
             {
-                txHashes = txHashes.map(x => x.hash); //all confirmed
-                console.log("txHashes: ", txHashes);
-                for(i in txHashes)
+                for(i in hashes)
                 {
-                    // console.log("coming into loop");
-                    update_conf_to_fullyConfirm(txHashes[i]);
+                    update_conf_to_fullyConfirm(hashes[i]);
                 }
             }
-        });
+        }
+        confirmation_model.find_confirmed_hash(callback_function);
     }
 
     else{
