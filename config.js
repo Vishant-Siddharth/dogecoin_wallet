@@ -1,0 +1,9 @@
+exports.callback_confirm_deposit = "http://127.0.0.1:5000/api/v1.2/receiveDeposit/";
+exports.callback_confirm_withdraw = "http://127.0.0.1:5000/api/v1.2/confirmWithdrawl/";
+exports.change_add = "ACgGLSLpsdW42hQs2bz3WfbnCQs2toqTfi";
+exports.api_key = process.env.DOGECOIN_MAIN_KEY || '1bbe-4b1c-591d-af62';
+exports.pass = process.env.DOGECOIN_MAIN_PASS || 'buyucoin123';
+exports.port = process.env.PORT || 5000;
+exports.host = process.env.HOST || "0.0.0.0";
+exports.priv_key = process.env.RIPPLE_PRIV_KEY || "AeUbAPt5u5v32K7olpIOpTH1fDcEtFkM";
+exports.pub_key = process.env.RIPPLE_PUB_KEY || "vtSfyAfctURQaMaG59P4hufc2UpwlZlo";

@@ -1,4 +1,4 @@
-var Confirmation = require('./confirmations');
+var Confirmation = require('../collections/confirmations');
 
 var insert_into_db = function(dict) {
 	var addNew = new Confirmation();
@@ -18,20 +18,28 @@ var insert_into_db = function(dict) {
 }
 
 var update_status_fully_confirmed = function(tx_hash){
-	Confirmation.update({"hash":tx_hash},{$set:{"status":'fully_confirmed'}})
-	.exec(function(err, res){
-	    if(err)
-	    {
-	        console.log("error while updating status from confirmed to fully_confirmed, err: ", err);
-	    }
-	    else
-	    {
-	        console.log("res: ", res);
-	    }
-	});
+    console.log("tx_hash:",tx_hash);
+    try{
+    	Confirmation.update({hash:tx_hash},{$set:{"status":'fully_confirmed'}})
+    	.exec((err, resp)=>{
+    	    if(err)
+    	    {
+    	        console.log("error while updating status from confirmed to fully_confirmed, err: ", err);
+    	    }
+    	    else
+    	    {
+    	        console.log("res: ", resp);
+    	    }
+    	});
+    }
+    catch(err)
+    {
+        console.log("error:", err);
+    }
 }
 
-var update_status_confirmed = function(confirmed_hash){
+var update_status_confirmed = function(confirmed_hash)
+{
 	Confirmation.update({ hash:{$in:confirmed_hash} }, {$set:{'status':'confirmed'}}, {multi:true}) //confirmed all confirmed_hashes
     .exec(function(err, info){
         if(err)
@@ -63,7 +71,7 @@ var find_hashes = function(callback)
     });
 }
 
-var find_confirmed_hash = function(callback)
+var find_confirmed_hashs = function(callback)
 {
 	Confirmation.find({status:"confirmed"}, {"hash":1, "_id":0})
     .exec(function(err, txHashes)
@@ -84,26 +92,28 @@ var find_confirmed_hash = function(callback)
     });
 }
 
-var find_addresses = function(tx_hash, callback){
+var find_addresses = function(tx_hash, callback)
+{
 	Confirmation.find({"hash":tx_hash}, {'add':1,'_id':0})
     .exec(function(err, addr){
         if(err)
         {
-            console.log('error while find_addresses, err: ', err);
+            // console.log('error while find_addresses, err: ', err);
             if(callback){callback(err, null);}
             else return err;
         }
         else
         {
-        	console.log("addresses: ", addr.add);
-        	if(callback){callback(null, addr.add);}
+        	// console.log("addresses: ", addr[0].add);
+        	if(callback){callback(null, addr[0].add);}
         	else return addr.add;
         }
+    });
 }
 
-module.export.insert_into_db = insert_into_db;
-module.export.update_status_fully_confirmed = update_status_fully_confirmed;
-module.export.update_status_confirmed = update_status_confirmed;
-module.export.find_hashes = find_hashes;
-module.export.find_confirmed_hash = find_confirmed_hash;
-module.export.find_addresses = find_addresses;
+module.exports.insert_into_db = insert_into_db;
+module.exports.update_status_fully_confirmed = update_status_fully_confirmed;
+module.exports.update_status_confirmed = update_status_confirmed;
+module.exports.find_hashes = find_hashes;
+module.exports.find_confirmed_hashs = find_confirmed_hashs;
+module.exports.find_addresses = find_addresses;

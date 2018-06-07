@@ -51,13 +51,15 @@ class DogeCoin
         };
         generate_add(String(label))
             .then((result) =>{ 
-                // console.log('then');
-            try{
-                call_back_function(null, result);
-             }
-             catch(e){
-                console.log("error1234 ", e);
-              }
+                try
+                {
+                    call_back_function(null, result);
+                }
+                catch(e)
+                {
+                    console.log("error1234 ", e);
+                    call_back_function(e, null);
+                }
             })
             .catch((err) => {if(err){console.log('asdf: ', err);}call_back_function(err, null);});
 
@@ -86,7 +88,7 @@ class DogeCoin
                     }
                 };
                 self.block_io.get_address_by_label({'label':label}, response);
-            })
+            });
         };
         get_add_by_label(label)
             .then((result) =>{ console.log('then');call_back_function(null, result);})
@@ -95,9 +97,10 @@ class DogeCoin
 
     get_availabel_balance(address, call_back_function)
     {
-        console.log("address: ", address);
+        // console.log("address: ", address);
         var get_availabel_bal = (address) =>
         {
+            // console.log("get_availabel_balance:", address);
             var self = this;
             return new Promise(function(resolve, reject)
             {
@@ -117,7 +120,7 @@ class DogeCoin
                     }
                 };
                 self.block_io.get_address_balance({'address':address}, response);
-            })
+            });
         };
 
         get_availabel_bal(address)
@@ -127,6 +130,7 @@ class DogeCoin
 
     pending_received_balance(address, call_back_function)
     {
+        console.log("address: ", address);
         var pending_received_bal = (address) =>
         {
             var self = this;
@@ -184,7 +188,7 @@ class DogeCoin
                     }
                 };
                 self.block_io.withdraw_from_addresses({'amount':amount, 'from_addresses':from_address, 'to_addresses':to_address, 'PIN':self.pin}, response);
-            })
+            });
         };
         withdrawl_bal()
             .then((result) =>{call_back_function(null, result);})
@@ -198,7 +202,6 @@ class DogeCoin
             return new Promise(function(resolve, reject)
             {
                 let url = "https://dogechain.info/api/v1/transaction/" + txid
-//                console.log("url: ", url);
                 var request = require('request');
                 request(url, function (error, response, body)
                 {
@@ -218,8 +221,21 @@ class DogeCoin
             });
         };
         transaction_details(txid)
-            .then((result) =>{call_back_function(null, result);})
-            .catch((err) => {if(err){console.log('asdf');}call_back_function(err, null);});
+            .then((result) =>{
+                console.log(result);
+                if(call_back_function){call_back_function(null, result);}
+                else return result;
+            })
+            .catch((err) => {
+                if(err){
+                    console.log('asdf');
+                }
+                if(call_back_function)
+                {
+                    call_back_function(err, null);
+                }
+                else return err;
+            });
     };
 }
 

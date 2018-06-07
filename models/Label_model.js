@@ -1,6 +1,7 @@
-var Label = require('./lastLabel');
+var Label = require('../collections/lastLabel');
 
-var inc_by_one = function()=>{
+var inc_by_one = function()
+{
 	Label.update({}, {$inc:{"label":1}})
 	.exec((err, label)=>{
 		if(err)
@@ -11,9 +12,9 @@ var inc_by_one = function()=>{
 	});
 }
 
-var find_one = function(callback_function)=>{
+var find_one = function(callback_function){
 	Label.findOne()
-		.exec(function(err, labels)=>{
+		.exec(function(err, labels){
 			if(err)
 			{
 				console.log("error while find_one , err: ", err);
@@ -29,5 +30,5 @@ var find_one = function(callback_function)=>{
 		});
 }
 
-module.export.inc_by_one = inc_by_one;
-module.export.find_one = find_one;
+module.exports.inc_by_one = inc_by_one;
+module.exports.find_one = find_one;
